@@ -37,7 +37,7 @@ http::run_inference_over_http(payload)
 #### 2. Inference Worker
 - **Language**: Python 3.12
 - **Location**: Private subnet (10.0.2.0/24)
-- **Instance Type**: t3.medium (2 vCPU, 4 GB RAM)
+- **Instance Type**: t3.small (1 vCPU, 2 GB RAM)
 - **Responsibilities**:
   - Load Gemma 3 270M language model
   - Receive RPC calls with message history
@@ -65,7 +65,7 @@ Internet
    ↓
 ┌─────────────────────────────┐
 │    AWS VPC                  │
-│  (10.0.0.0/16)             │
+│  (10.0.0.0/16)              │
 ├─────────────────────────────┤
 │                             │
 │  ┌──────────────────────┐   │  Public Subnet
@@ -73,8 +73,8 @@ Internet
 │  │  - Public IP         │   │  Internet Gateway
 │  │  - Port 3111 (HTTP)  │   │
 │  └─────────┬────────────┘   │
-│            │ RPC             │
-│            │ (49134)         │
+│            │ RPC            │
+│            │ (49134)        │
 │  ┌─────────▼────────────┐   │  Private Subnet
 │  │ Inference Worker     │   │  (10.0.2.0/24)
 │  │ - NO Public IP       │   │  NAT Gateway
@@ -415,7 +415,6 @@ After initialization (2-3 more minutes):
 ```
 Instance Running Cost:
   t3.small: $0.0104/hour = $7.49/month
-  t3.medium: $0.0208/hour = $14.98/month
   Total compute: ~$22/month (within free tier first 750h)
 
 Network:
@@ -431,8 +430,3 @@ Total AWS Cost (free tier): ~$0 first 12 months
 Total AWS Cost (post free tier): ~$50-60/month
 ```
 
----
-
-**Version**: 1.0  
-**Last Updated**: May 2026  
-**Architecture Diagram**: ASCII diagram included above

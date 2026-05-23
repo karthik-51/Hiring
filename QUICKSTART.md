@@ -68,17 +68,18 @@ devops/quickstart/
 # Configure AWS: aws configure
 
 aws configure
-# Enter: Access Key, Secret Key, Region (us-east-1), Output (json)
+# Enter: Access Key, Secret Key, Region (ap-south-2), Output (json)
 ```
 
 ### Step 2: Clone & Configure
 ```bash
-git clone https://github.com/yourusername/hiring.git
+git clone https://github.com/Karthik-51/Hiring.git
 cd hiring/terraform
 
 # Edit configuration (restrict SSH to your IP)
 cp terraform.tfvars.example terraform.tfvars
 vim terraform.tfvars
+# Default region in terraform.tfvars.example is ap-south-2
 # Change: allowed_ssh_cidrs = ["YOUR.IP.ADDRESS/32"]
 ```
 
@@ -121,7 +122,7 @@ terraform destroy
                     INTERNET
                        ↓
           ┌────────────────────────┐
-          │  AWS REGION (us-east-1)│
+          │ AWS REGION (ap-south-2)│
           ├────────────────────────┤
           │   VPC (10.0.0.0/16)    │
           │  ┌──────────────────┐  │
@@ -132,18 +133,18 @@ terraform destroy
           │  │ │ t3.small     │ │  │
           │  │ │ :3111 (HTTP) │ │  │
           │  │ └────┬─────────┘ │  │
-          │  └──────│────────────┘  │
-          │         │ RPC (49134)   │
-          │  ┌──────▼────────────┐  │
-          │  │ Private Subnet    │  │
+          │  └──────│───────────┘  │
+          │         │ RPC (49134)  │
+          │  ┌──────▼───────────┐  │
+          │  │ Private Subnet   │  │
           │  │ (10.0.2.0/24)    │  │
           │  │ ┌──────────────┐ │  │
           │  │ │ Inference    │ │  │
-          │  │ │ t3.medium    │ │  │
+          │  │ │ t3.small     │ │  │
           │  │ │ (Python)     │ │  │
           │  │ └──────────────┘ │  │
           │  └──────────────────┘  │
-          │  [NAT] [IGW] [Routes]   │
+          │  [NAT] [IGW] [Routes]  │
           └────────────────────────┘
                        ↑
                    Only API exposed!
@@ -267,52 +268,3 @@ PRODUCTION.md covers:
 3. **Async Processing** - SQS queue + DynamoDB
 4. **Caching** - Redis for frequent queries
 5. **Model Optimization** - Quantization, distillation, LoRA
-
-## 🚀 Ready to Submit!
-
-Everything is production-ready and demonstrates deep DevOps knowledge:
-- ✅ IaC best practices
-- ✅ Network architecture
-- ✅ Security hardening
-- ✅ Monitoring & logging
-- ✅ Scaling strategies
-- ✅ Cost optimization
-- ✅ Complete documentation
-
----
-
-**Deployment Time**: ~10 minutes  
-**Total Code/Docs**: 2000+ lines  
-**Ready for Production**: Yes  
-**Scalable to 100x**: Yes  
-
-**Status**: ✅ READY TO SUBMIT
-
----
-
-## Next Steps
-
-1. **Update GitHub repo URL** in `terraform/compute.tf`
-   - Line: `github_repo = "https://github.com/yourusername/hiring"`
-
-2. **Test locally** (optional but recommended)
-   - Run `terraform plan` to see what will be created
-   - Verify outputs are correct
-
-3. **Deploy to AWS**
-   - Run `../scripts/deploy.sh`
-   - Wait 5 minutes for initialization
-   - Test with curl command
-
-4. **Submit**
-   - Push to GitHub
-   - Email repo link to: `anuran@getalchemystai.com`
-   - CC: `saumitra@getalchemystai.com`, `khushi@getalchemystai.com`
-   - Subject: `DevOps Internship Assignment — <Your Name>`
-
----
-
-**Questions?** Check the documentation files:
-- Deployment help → `DEPLOYMENT.md`
-- Architecture details → `ARCHITECTURE.md`
-- Production/scaling → `PRODUCTION.md`

@@ -616,8 +616,4 @@ Need to scale?
    └─ Use distilled/pruned models
 ```
 
----
 
-**Version**: 1.0  
-**Last Updated**: May 2026  
-**Audience**: DevOps Engineers, Platform Teams

@@ -54,7 +54,7 @@ Use this checklist to verify everything is ready before submitting.
 ## ✅ Configuration
 
 - [ ] **terraform/terraform.tfvars.example** - Contains:
-  - [ ] Default AWS region (us-east-1)
+  - [ ] Default AWS region (ap-south-2)
   - [ ] Network CIDR blocks
   - [ ] Instance types
   - [ ] Example security settings
@@ -101,7 +101,7 @@ Before submitting:
   git add .
   git commit -m "DevOps internship assignment submission"
   git branch -M main
-  git remote add origin https://github.com/yourusername/hiring.git
+  git remote add origin https://github.com/Karthik-51/Hiring.git
   git push -u origin main
   ```
 
@@ -277,70 +277,3 @@ find . -name "*.md" | wc -l
 find . -name "*.sh" | wc -l
 # Should be: 2+ Shell scripts
 ```
-
-- [ ] Repo structure is correct
-- [ ] All files are committed
-- [ ] No secrets in repo history
-- [ ] All required files present
-
-## ✅ Submission Ready
-
-Final verification:
-
-- [ ] GitHub repo link is public
-- [ ] All documentation is readable (no encoding issues)
-- [ ] All Terraform files are present
-- [ ] Deployment scripts are executable
-- [ ] No sensitive data in any files
-- [ ] README explains the project
-- [ ] QUICKSTART.md provides quick reference
-
-## 📧 Submission
-
-When ready, email:
-
-**To**: anuran@getalchemystai.com  
-**CC**: saumitra@getalchemystai.com, khushi@getalchemystai.com  
-**Subject**: `DevOps Internship Assignment — Your Name`
-
-**Body**:
-```
-Hi team,
-
-I've completed the DevOps internship assignment. Here's my submission:
-
-GitHub Repo: https://github.com/yourusername/hiring
-Key Files:
-- Terraform IaC: terraform/
-- Deployment Scripts: scripts/
-- Documentation: DEPLOYMENT.md, ARCHITECTURE.md, PRODUCTION.md
-
-Quick Start:
-1. aws configure
-2. cd terraform
-3. cp terraform.tfvars.example terraform.tfvars
-4. vim terraform.tfvars  # Edit allowed_ssh_cidrs
-5. ../scripts/deploy.sh
-
-The deployment creates:
-- VPC with public/private subnets
-- Security-hardened security groups
-- API Gateway (TypeScript) in public subnet
-- Inference Worker (Python) in private subnet
-- Auto-deployment via user-data scripts
-
-All infrastructure is reproducible via Terraform.
-
-Architecture, hardening, and scaling documentation are included.
-
-Best regards,
-Your Name
-```
-
----
-
-**Total Items**: 50+  
-**Time to Complete**: ~2 hours (with review)  
-**Difficulty**: Medium  
-**Status**: Ready for submission when all checked
-

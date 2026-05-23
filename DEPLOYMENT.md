@@ -1,64 +1,61 @@
 # Distributed Inference Deployment on AWS
 
-A production-ready Infrastructure-as-Code solution for deploying a distributed AI inference system across AWS using Terraform. This deployment spans multiple VMs in a private VPC with an isolated architecture.
+A production-ready Infrastructure-as-Code solution for deploying a distributed AI inference system across AWS using Terraform. This deployment spans multiple VMs within a private VPC and uses an isolated network architecture.
 
 ## 📋 Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     AWS REGION: us-east-1                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │           VPC (10.0.0.0/16)                              │   │
-│  │                                                           │   │
-│  │  ┌─────────────────────────────────────────────────────┐ │   │
-│  │  │  Public Subnet (10.0.1.0/24)                        │ │   │
-│  │  │                                                      │ │   │
-│  │  │  ┌──────────────────────────────────────────────┐   │ │   │
-│  │  │  │  API Gateway VM (t3.small)                   │   │ │   │
-│  │  │  │  - TypeScript Caller Worker                  │   │ │   │
-│  │  │  │  - Public IP: Exposed                        │   │ │   │
-│  │  │  │  - Port 3111: HTTP API                       │   │ │   │
-│  │  │  │  - Port 22: SSH (restricted)                 │   │ │   │
-│  │  │  └──────────────────────────────────────────────┘   │ │   │
-│  │  │                                                      │ │   │
-│  │  │  [Internet Gateway] ↔ [NAT Gateway]                │ │   │
-│  │  └─────────────────────────────────────────────────────┘ │   │
-│  │           ↕ (RPC over VPC - Port 49134)                   │   │
-│  │  ┌─────────────────────────────────────────────────────┐ │   │
-│  │  │  Private Subnet (10.0.2.0/24)                       │ │   │
-│  │  │                                                      │ │   │
-│  │  │  ┌──────────────────────────────────────────────┐   │ │   │
-│  │  │  │  Inference Worker VM (t3.medium)             │   │ │   │
-│  │  │  │  - Python Inference Worker                   │   │ │   │
-│  │  │  │  - NO public IP (private only)               │   │ │   │
-│  │  │  │  - Port 49134: RPC (from API GW only)        │   │ │   │
-│  │  │  │  - Port 22: SSH (from Bastion only)          │   │ │   │
-│  │  │  │  - Loads Gemma 3 270M model                  │   │ │   │
-│  │  │  └──────────────────────────────────────────────┘   │ │   │
-│  │  │                                                      │ │   │
-│  │  └─────────────────────────────────────────────────────┘ │   │
-│  │                                                           │   │
-│  │  [Optional: Bastion Host in Public Subnet]              │   │
-│  │                                                           │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                   │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                     AWS REGION: ap-south-2                    │
+├───────────────────────────────────────────────────────────────┤
+│ VPC: 10.0.0.0/16                                              │
+│                                                               │
+│ ┌───────────────────────────────────────────────────────────┐ │
+│ │ Public Subnet: 10.0.1.0/24                                │ │
+│ │                                                           │ │
+│ │ ┌───────────────────────────────────────────────────────┐ │ │
+│ │ │ API Gateway VM (t3.small)                             │ │ │
+│ │ │  - TypeScript Caller Worker                           │ │ │
+│ │ │  - Public IP assigned                                 │ │ │
+│ │ │  - Ports: 3111 (HTTP API), 22 (SSH restricted)        │ │ │
+│ │ └───────────────────────────────────────────────────────┘ │ │
+│ │                                                           │ │
+│ │ [Internet Gateway] ↔ [NAT Gateway]                        │ │
+│ └───────────────────────────────────────────────────────────┘ │
+│             │ RPC (Port 49134)                                │ 
+│             ▼                                                 │
+│ ┌───────────────────────────────────────────────────────────┐ │
+│ │ Private Subnet: 10.0.2.0/24                               │ │
+│ │                                                           │ │
+│ │ ┌───────────────────────────────────────────────────────┐ │ │
+│ │ │ Inference Worker VM (t3.medium)                       │ │ │
+│ │ │  - Python Inference Worker                            │ │ │
+│ │ │  - No public IP (private only)                        │ │ │
+│ │ │  - Ports: 49134 (RPC from API Gateway),               │ │ │
+│ │ │           22 (SSH via Bastion)                        │ │ │
+│ │ │  - Loads Gemma 3 270M model                           │ │ │
+│ │ └───────────────────────────────────────────────────────┘ │ │
+│ │                                                           │ │
+│ └───────────────────────────────────────────────────────────┘ │
+│                                                               │
+│ [Optional: Bastion Host in Public Subnet]                     │
+└───────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────┐
-│        SECURITY GROUPS (Firewall)       │
-├─────────────────────────────────────────┤
-│ Public SG:                              │
-│  ✓ SSH 22 (from allowed_ssh_cidrs)    │
-│  ✓ HTTP 3111 (from 0.0.0.0/0)         │
-│                                         │
-│ Private SG:                             │
-│  ✓ RPC 49134 (from Public SG only)    │
-│  ✓ SSH 22 (from Bastion SG only)      │
-│                                         │
-│ NAT allows private→internet (outbound) │
-└─────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────┐
+│        SECURITY GROUPS (Firewall)             │
+├───────────────────────────────────────────────┤
+│ Public SG:                                    │
+│  ✓ SSH 22 (from allowed_ssh_cidrs)            │
+│  ✓ HTTP 3111 (from 0.0.0.0/0)                 │
+│                                               │
+│ Private SG:                                   │
+│  ✓ RPC 49134 (from Public SG only)            │
+│  ✓ SSH 22 (from Bastion SG only)              │
+│                                               │
+│ NAT Gateway: allows private → internet (outbound) │
+└───────────────────────────────────────────────┘
+
 ```
 
 ## 🚀 Quick Start
@@ -73,6 +70,11 @@ A production-ready Infrastructure-as-Code solution for deploying a distributed A
    - AWS CLI: https://aws.amazon.com/cli/
    - Git
 
+### Runtime Requirements
+- Node.js 18+ and npm
+- Python 3.12, `python3-venv`, and `pip`
+- The inference worker bootstraps via `terraform/user_data_inference.sh`; this script installs Python dependencies and creates a placeholder `iii-engine.service`. For end-to-end inference, replace the placeholder service command with the actual `iii` engine binary and ensure the GGUF model file is available on the inference instance.
+
 ### Installation & Deployment
 
 #### Step 1: Configure AWS Credentials
@@ -81,61 +83,59 @@ aws configure
 # Enter:
 # AWS Access Key ID: [from AWS Console]
 # AWS Secret Access Key: [from AWS Console]
-# Default region: us-east-1
+# Default region: ap-south-2
 # Default output format: json
 ```
 
 #### Step 2: Clone Repository
 ```bash
-git clone https://github.com/yourusername/hiring.git
-cd hiring/terraform
+git clone https://github.com/Karthik-51/Hiring.git
+cd Hiring/terraform
 ```
 
 #### Step 3: Customize Configuration
 ```bash
-# Copy example variables
 cp terraform.tfvars.example terraform.tfvars
-
-# Edit terraform.tfvars
 vim terraform.tfvars
-# Key changes:
-#   - allowed_ssh_cidrs: Change to your IP (e.g., "203.0.113.45/32")
-#   - Region, instance types, subnet sizes as needed
 ```
+
+Key configuration values:
+- `allowed_ssh_cidrs`: change to your IP address (for example, `203.0.113.45/32`)
+- `region`, `instance_type`, and subnet CIDR blocks as needed
 
 #### Step 4: Deploy Infrastructure
 ```bash
-# Make script executable
 chmod +x ../scripts/deploy.sh
-
-# Run deployment
 ../scripts/deploy.sh
 ```
 
 The script will:
-1. ✅ Initialize Terraform
-2. ✅ Validate configuration
-3. ✅ Show infrastructure plan
-4. ✅ Create resources
-5. ✅ Output deployment details
+1. Initialize Terraform
+2. Validate configuration
+3. Show infrastructure plan
+4. Create resources
+5. Output deployment details
 
 #### Step 5: Wait for Initialization
 ```bash
 # Instances take 2-3 minutes to initialize
-# Monitor logs:
-aws ec2 describe-instances --region us-east-1
+aws ec2 describe-instances --region ap-south-2
 ```
 
-### Testing the Deployment
+## 🔧 Testing the Deployment
 
-#### Get API Endpoint
+### Get the API Endpoint
 ```bash
 cd terraform
 terraform output api_endpoint
-# Output: http://<PUBLIC_IP>:3111/v1/chat/completions
 ```
 
-#### Test API with curl
+Expected output format:
+```text
+http://<PUBLIC_IP>:3111/v1/chat/completions
+```
+
+### Test the API
 ```bash
 curl -X POST http://<PUBLIC_IP>:3111/v1/chat/completions \
   -H "Content-Type: application/json" \
@@ -149,7 +149,7 @@ curl -X POST http://<PUBLIC_IP>:3111/v1/chat/completions \
   }'
 ```
 
-#### Expected Response
+### Expected Response
 ```json
 {
   "status_code": 200,
@@ -162,12 +162,13 @@ curl -X POST http://<PUBLIC_IP>:3111/v1/chat/completions \
 }
 ```
 
-#### SSH to Instances
+### SSH Access
 ```bash
-# API Gateway (public)
 ssh -i ~/.ssh/id_rsa ubuntu@<PUBLIC_IP>
+```
 
-# Through Bastion (if enabled)
+Through bastion host (if enabled):
+```bash
 ssh -i ~/.ssh/id_rsa \
   -o ProxyCommand='ssh -i ~/.ssh/id_rsa -W %h:%p ubuntu@<BASTION_IP>' \
   ubuntu@<INFERENCE_PRIVATE_IP>
@@ -178,26 +179,26 @@ ssh -i ~/.ssh/id_rsa \
 ```
 terraform/
 ├── main.tf                    # Main configuration (references others)
-├── provider.tf               # AWS provider setup
-├── variables.tf              # Input variables
-├── network.tf                # VPC, subnets, security groups, IGW
-├── compute.tf                # EC2 instances
-├── outputs.tf                # Output values
-├── user_data_api.sh          # API Gateway initialization script
-├── user_data_inference.sh    # Inference Worker initialization script
-├── terraform.tfvars.example  # Example variables file
-└── .gitignore               # Git ignore patterns
+├── provider.tf                # AWS provider setup
+├── variables.tf               # Input variables
+├── network.tf                 # VPC, subnets, security groups, IGW
+├── compute.tf                 # EC2 instances
+├── outputs.tf                 # Output values
+├── user_data_api.sh           # API Gateway initialization script
+├── user_data_inference.sh     # Inference Worker initialization script
+├── terraform.tfvars.example   # Example variables file
+└── .gitignore                 # Git ignore patterns
 
 scripts/
-├── deploy.sh                 # Main deployment script
-└── cleanup.sh               # Destroy infrastructure
+├── deploy.sh                  # Main deployment script
+└── cleanup.sh                 # Destroy infrastructure
 
 devops/quickstart/
 ├── workers/
-│   ├── caller-worker/        # TypeScript API Gateway
-│   └── inference-worker/     # Python Inference Worker
-├── config.yaml              # iii framework config
-└── README.md               # Quickstart documentation
+│   ├── caller-worker/         # TypeScript API Gateway
+│   └── inference-worker/      # Python Inference Worker
+├── config.yaml               # iii framework config
+└── README.md                 # Quickstart documentation
 ```
 
 ## 🔒 Security

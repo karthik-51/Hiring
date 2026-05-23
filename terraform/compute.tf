@@ -66,7 +66,7 @@ resource "aws_instance" "inference_worker" {
 
   # User data script to deploy inference-worker
   user_data = base64encode(templatefile("${path.module}/user_data_inference.sh", {
-    github_repo = "https://github.com/yourusername/hiring"  # Replace with actual repo
+    github_repo = "https://github.com/Karthik-51/Hiring"  
   }))
 
   root_block_device {
