@@ -29,7 +29,7 @@ resource "aws_instance" "api_gateway" {
   
   # User data script to deploy caller-worker
   user_data = base64encode(templatefile("${path.module}/user_data_api.sh", {
-    github_repo        = "https://github.com/yourusername/hiring"  # Replace with actual repo
+    github_repo        = "https://github.com/karthik-51/Hiring.git"  # Replace with actual repo
     inference_worker_ip = aws_instance.inference_worker.private_ip
   }))
 
